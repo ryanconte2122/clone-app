@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>1ClickWebsite.ai — Reverse-Engineering Brief</title>
+<style>
+  @page {
+    size: Letter;
+    margin: 0.6in 0.5in 0.7in 0.5in;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: -apple-system, Helvetica, sans-serif;
+      font-size: 9pt;
+      color: #666;
+    }
+    @top-right {
+      content: "1ClickWebsite.ai — Reverse-Engineering Brief · 2026-07-06";
+      font-family: -apple-system, Helvetica, sans-serif;
+      font-size: 8pt;
+      color: #999;
+    }
+  }
+  html { font-size: 10.5pt; }
+  body {
+    font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.45;
+    max-width: 100%;
+  }
+  h1 {
+    font-size: 22pt;
+    font-weight: 800;
+    margin: 0 0 4pt 0;
+    padding-bottom: 6pt;
+    border-bottom: 3px solid #2563eb;
+    color: #0f172a;
+  }
+  h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    margin: 18pt 0 6pt 0;
+    padding: 4pt 0 4pt 8pt;
+    background: linear-gradient(90deg, #eff6ff 0%, transparent 100%);
+    border-left: 4px solid #2563eb;
+    color: #0f172a;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 12pt 0 4pt 0;
+    color: #1e293b;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 8pt 0 3pt 0;
+    color: #334155;
+    page-break-after: avoid;
+  }
+  p { margin: 0 0 6pt 0; }
+  hr { border: 0; border-top: 1px solid #e2e8f0; margin: 12pt 0; }
+  code {
+    background: #f1f5f9;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 9pt;
+    color: #be185d;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 8pt;
+    border-radius: 4pt;
+    overflow-x: auto;
+    font-size: 8.5pt;
+    line-height: 1.35;
+    page-break-inside: avoid;
+  }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 6pt 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 4pt 6pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  blockquote {
+    border-left: 3px solid #94a3b8;
+    padding-left: 8pt;
+    color: #475569;
+    font-style: italic;
+    margin: 6pt 0;
+  }
+  ul, ol { margin: 4pt 0 6pt 16pt; padding: 0; }
+  li { margin: 2pt 0; }
+  strong { color: #0f172a; font-weight: 700; }
+  em { color: #475569; }
+  /* First-page header */
+  body::before {
+    content: "";
+    display: block;
+    height: 0;
+  }
+  /* Page break hints */
+  h1, h2 { page-break-after: avoid; }
+  h2 + *, h3 + * { page-break-before: avoid; }
+</style>
+</head>
+<body>
+<h1 id="1clickwebsiteai-reverse-engineering-brief">1ClickWebsite.ai — Reverse-Engineering Brief</h1>
+<h2 id="for-claude-code-codex-agent-implementation">For Claude Code / Codex Agent Implementation</h2>
+<p><strong>Date:</strong> 2026-07-06
+<strong>Source:</strong> https://1clickwebsite.ai (homepage + /blog/v2-release + /blog/v2-rerelease-june-20 + /blog/best-ghl-website-alternatives + /blog/add-ghl-mcp-to-claude-desktop)
+<strong>Author:</strong> Loki (Hermes Agent) for Ryan Conte</p>
+<hr />
+<h2 id="1-what-this-product-is">1. WHAT THIS PRODUCT IS</h2>
+<p><strong>1ClickWebsite.ai</strong> is an AI-powered <strong>WordPress site generator for agencies</strong>. Single-page web app built on Next.js + Supabase. Solves one specific job: <strong>"agency owner needs a client-ready WordPress site in 5 minutes, not 2 weeks."</strong></p>
+<p><strong>Founder:</strong> Bennett Black
+<strong>Tagline:</strong> "Launch SEO Ready WordPress Sites in Minutes"
+<strong>Market:</strong> Agency owners + marketing freelancers (NOT end-business owners)
+<strong>Pricing:</strong> $49 / $97 / $197 / $997+ per month
+<strong>Generation speed:</strong> ~5 minutes per site
+<strong>Output:</strong> Real WordPress install with Breakdance (V1) or OCF (V2), structured fields, SEO-ready content, agency-white-label</p>
+<p><strong>What it is NOT:</strong> A funnel builder. A CRM. A landing-page tool. A Wix/Framer alternative. Those are competitors, not this product.</p>
+<hr />
+<h2 id="2-core-user-flow-the-3-step-dance">2. CORE USER FLOW (THE 3-STEP DANCE)</h2>
+<p>The entire homepage hero + product revolves around three numbered steps. This is THE conversion narrative.</p>
+<pre><code>┌──────────────────────────────────────────────────────────────────┐
+│  01. CHOOSE YOUR DESIGN                                           │
+│      Template picker. 8 templates visible on /create#v2 carousel  │
+│      (Lightning = flagship; Pearl, Summit Sage, etc. visible).   │
+│      User clicks template card → &quot;Lightning selected&quot; state.     │
+│      Counter shows &quot;1 / 8&quot; position in carousel.                 │
+├──────────────────────────────────────────────────────────────────┤
+│  02. FILL OUT THE FORM                                            │
+│      Brief intake: company name, industry, services, target      │
+│      areas. ~2 minutes. Multi-step form, language picker at top.  │
+│      V2 has: business details + service areas + city list.        │
+├──────────────────────────────────────────────────────────────────┤
+│  03. GET YOUR SITE                                                │
+│      ~5 min wait → real WordPress site generated.                │
+│      Three delivery options:                                       │
+│        a) Download as export (zipped WP site)                     │
+│        b) Migrate to own hosting (migration plugin)               │
+│        c) Share temporary link with client (for agency demo)      │
+└──────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>This is the only flow that matters.</strong> Every feature, every pricing tier, every testimonial maps back to "make these three steps faster."</p>
+<hr />
+<h2 id="3-feature-taxonomy-the-12-way-product-breakdown">3. FEATURE TAXONOMY (THE 12-WAY PRODUCT BREAKDOWN)</h2>
+<p>Grouped from the homepage "What's Included" + "Additional Features" sections. Each is a real, paid-included capability.</p>
+<h3 id="a-core-site-generation-features-every-plan">A. Core site-generation features (every plan)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>V1 implementation</th>
+<th>V2 implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Meta titles &amp; descriptions</strong></td>
+<td>prewritten per page</td>
+<td>prewritten per page (better)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Lightweight, zero-bloat</strong></td>
+<td>Breakdance-based, needs cache</td>
+<td>OCF-based, lighter template system</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Full admin access</strong></td>
+<td>WP admin credentials</td>
+<td>WP admin credentials</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>5-min delivery</strong></td>
+<td>~5 min</td>
+<td>~5 min</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Mobile + tablet optimized</strong></td>
+<td>responsive Breakdance</td>
+<td>responsive OCF templates</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>100% white-label</strong></td>
+<td>no 1ClickWebsite branding</td>
+<td>no 1ClickWebsite branding</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-premium-add-on-modules-live-beta">B. Premium add-on modules (live + beta)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Module</th>
+<th>Status</th>
+<th>What it does</th>
+<th>Pricing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td><strong>1ClickHosting</strong></td>
+<td>LIVE</td>
+<td>Managed WP hosting, custom domains, SSL, 99.9% uptime, white-label</td>
+<td>$10/site/month</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>LeadGen</strong></td>
+<td>LIVE</td>
+<td>CSV upload of Google businesses → batch mini demo sites for outreach</td>
+<td>Bundled in plans (3 / 500 / 1K runs)</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Website Agent</strong></td>
+<td>LIVE BETA</td>
+<td>AI chat assistant that edits V2 sites (text, images, design, SEO, pages)</td>
+<td>Bundled, with usage multipliers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c-the-choose-your-design-carousel">C. The "Choose Your Design" carousel</h3>
+<ul>
+<li><strong>V1:</strong> Breakdance-based templates, 5+ shipped</li>
+<li><strong>V2:</strong> OCF-based templates, 3 currently shipped, Lightning is flagship</li>
+<li>Templates have previews at <code>https://&lt;slug&gt;.m7q4.temphost024.com/</code> subdomain pattern</li>
+</ul>
+<hr />
+<h2 id="4-architecture-v1-vs-v2-the-big-differentiator">4. ARCHITECTURE — V1 vs V2 (THE BIG DIFFERENTIATOR)</h2>
+<p>The V2 release is the architectural north star. This is what makes the product agent-friendly, and it's the technical moat.</p>
+<h3 id="v1-stack">V1 stack</h3>
+<ul>
+<li><strong>Foundation:</strong> Breakdance Pro WordPress builder</li>
+<li><strong>Plugins:</strong> Breakdance Pro, ACF Pro, FluentSMTP, Slim SEO Pro, caching tools</li>
+<li><strong>Editing:</strong> Mostly Breakdance visual builder or WordPress admin universal fields</li>
+<li><strong>Section design:</strong> Manual Breakdance editing</li>
+<li><strong>Agent capabilities:</strong> Limited — useful for service pages + service areas + global colors</li>
+<li><strong>SEO content depth:</strong> Service pages ~500 words</li>
+<li><strong>Page weight:</strong> Heavier (Breakdance bloat), needs more caching</li>
+<li><strong>Image gen:</strong> Older image generation flow</li>
+</ul>
+<h3 id="v2-stack">V2 stack</h3>
+<ul>
+<li><strong>Foundation:</strong> OCF (Own Custom Framework) — bespoke WordPress layer</li>
+<li><strong>Plugins:</strong> OCF, FluentSMTP, Slim SEO, lighter managed stack</li>
+<li><strong>Editing:</strong> OCF visual editor + WP admin fields + Website Agent</li>
+<li><strong>Section design:</strong> Agent-assisted editing + section variation system</li>
+<li><strong>Agent capabilities:</strong> Broad — text, images, design, pages, templates, blog posts, SEO fields, schema, image creation</li>
+<li><strong>SEO content depth:</strong> Service pages ~1,200 words with stronger FAQs</li>
+<li><strong>Page weight:</strong> Lighter template system</li>
+<li><strong>Image gen:</strong> Newer GPT image generation, better quality</li>
+<li><strong>Light/dark mode:</strong> Switchable via OCF settings</li>
+</ul>
+<h3 id="why-v2-exists-verbatim-from-founder">Why V2 exists (verbatim from founder)</h3>
+<blockquote>
+<p>"AI agents need a cleaner way to understand and change websites. Breakdance is powerful for humans, but it is not the easiest foundation for an AI agent to safely edit. V2 was built around a more structured system so the agent can understand what each section, field, image, page, and design setting actually does."</p>
+</blockquote>
+<p><strong>This is the product thesis.</strong> The OCF is what makes the Website Agent + Claude Code integration actually work.</p>
+<h3 id="mcp-integration">MCP integration</h3>
+<p>The site actively encourages Claude Code / Codex usage on V2 sites. From FAQ:</p>
+<blockquote>
+<p>"Yes. This is possible and suggested for editing V2 sites. Give your agent this link: [ADD LINK HERE]. Your agent will then know how to manipulate your site correctly once it has an application password."</p>
+</blockquote>
+<p>So V2 sites expose a <strong>structured agent API</strong> (likely OCF REST endpoints + WordPress application password auth).</p>
+<hr />
+<h2 id="5-pricing-4-tiers-agency-optimized">5. PRICING — 4 TIERS, AGENCY-OPTIMIZED</h2>
+<pre><code>┌─────────────┬─────────┬──────────────┬────────────────────────────┐
+│ Tier        │ Price   │ Sites/month  │ Other                       │
+├─────────────┼─────────┼──────────────┼────────────────────────────┤
+│ Starter     │ $49/mo  │ 3 sites      │ Website Agent              │
+│             │         │              │ LeadGen Runs (unspecified)  │
+│             │         │              │ Standard support            │
+│             │         │              │ Export to any host          │
+│             │         │              │ White-label delivery        │
+├─────────────┼─────────┼──────────────┼────────────────────────────┤
+│ Professional│ $97/mo  │ 10 sites     │ 3x Website Agent usage      │
+│             │         │              │ 500 LeadGen Runs            │
+│             │         │              │ Priority support            │
+│             │         │              │ Export to any host          │
+│             │         │              │ White-label delivery        │
+├─────────────┼─────────┼──────────────┼────────────────────────────┤
+│ Expert      │ $197/mo │ 25 sites     │ 7x Website Agent usage      │
+│             │         │              │ 1K LeadGen Runs             │
+│             │         │              │ Priority support            │
+│             │         │              │ Export to any host          │
+│             │         │              │ White-label delivery        │
+├─────────────┼─────────┼──────────────┼────────────────────────────┤
+│ Agency V2   │ $997+   │ Unlimited    │ Unlimited sites             │
+│ (cal.com)   │         │              │ Unlimited lead gen          │
+│             │         │              │ BYO AI keys                 │
+│             │         │              │ Team members                │
+│             │         │              │ Full white-label            │
+└─────────────┴─────────┴──────────────┴────────────────────────────┘
+</code></pre>
+<p><strong>Annual:</strong> 3 months free.
+<strong>Checkout:</strong> Stripe.
+<strong>All plans include:</strong> Hosting export, white-label delivery, Website Agent (with multipliers).</p>
+<p><strong>The value ladder per site:</strong>
+- Starter: $16/site (3 sites for $49)
+- Professional: $9.70/site (10 sites for $97)
+- Expert: $7.88/site (25 sites for $197)
+- Agency: unbounded (volume play)</p>
+<p><strong>If agency sells site for $2,000</strong> (their stated customer target): Expert tier = 0.4% COGS. Even at $500/site, 1.6% COGS. The economics are absurd.</p>
+<hr />
+<h2 id="6-the-competitive-positioning-from-their-own-blog">6. THE COMPETITIVE POSITIONING (FROM THEIR OWN BLOG)</h2>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Competitor</th>
+<th>What 1ClickWebsite.ai says</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>1ClickWebsite.ai</strong></td>
+<td>Best GHL alternative for full client sites</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Duda</strong></td>
+<td>Hosted white-label builder, not WordPress</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Wix Studio</strong></td>
+<td>Visual design control, slower</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>10Web</strong></td>
+<td>AI WordPress starter, more shaping needed</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Framer</strong></td>
+<td>Design-focused, not local-SEO</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Manual WP (Elementor/Breakdance/OptimizePress)</strong></td>
+<td>Flexible but slow</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Their wedge against GHL (GoHighLevel):</strong> "GHL is fine for CRM/pipeline. It's slow for client website builds. Use GHL for the CRM, use 1ClickWebsite.ai for the site."</p>
+<p><strong>Their wedge against Duda/Framer/Wix Studio:</strong> "Those aren't WordPress. If your clients expect WordPress (and most do for SEO/ownership), we're the only AI builder that ships a real WP site."</p>
+<p><strong>Their wedge against manual WordPress:</strong> "We give you a useful first draft in 5 minutes. You polish the parts that need judgment (offer, copy, images). We don't replace designers — we replace the blank page."</p>
+<hr />
+<h2 id="7-target-market-psychographics">7. TARGET MARKET PSYCHOGRAPHICS</h2>
+<p>From the testimonials, FAQ, and the founder's blog voice:</p>
+<table>
+<thead>
+<tr>
+<th>Trait</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Has agency clients paying $500–$5,000/site</strong></td>
+<td>Repeated: "sold 6 sites in 30 days", "$500/mo clients through DMs", "$2,000–$5,000 range"</td>
+</tr>
+<tr>
+<td><strong>Was building sites in 1-2 weeks before</strong></td>
+<td>Repeated: "used to build sites for weeks"</td>
+</tr>
+<tr>
+<td><strong>Frustrated with GHL website builder specifically</strong></td>
+<td>Entire 9-min blog post on GHL alternatives</td>
+</tr>
+<tr>
+<td><strong>Wants speed, not maximalism</strong></td>
+<td>"Useful first draft in minutes" is the recurring promise</td>
+</tr>
+<tr>
+<td><strong>Owns WordPress or wants to</strong></td>
+<td>"Why is WordPress a big deal?" is an FAQ — they assume the audience knows it is</td>
+</tr>
+<tr>
+<td><strong>Sales via DM/cold outreach</strong></td>
+<td>LeadGen tool exists exactly for this</td>
+</tr>
+<tr>
+<td><strong>Skeptical of AI tools</strong></td>
+<td>Reviews emphasize "real WordPress", "SEO friendly", "not bloated"</td>
+</tr>
+<tr>
+<td><strong>Building 3-25 sites/month</strong></td>
+<td>All three paid tiers sit in this range</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Negative persona (who this is NOT for):</strong>
+- Solo founders building their own site (use Framer, Carrd, WordPress.com)
+- Enterprise teams (use Webflow, custom Next.js)
+- Bloggers / content sites (use Ghost, Substack)
+- eCommerce (use Shopify)</p>
+<hr />
+<h2 id="8-brand-voice-from-the-copy">8. BRAND VOICE (FROM THE COPY)</h2>
+<p>Direct, no-BS, founder-led. Bennett Black writes in first person on the blog. Tone is conversational but informed.</p>
+<p><strong>Recurring vocabulary:</strong>
+- "agency owners", "agency-ready", "client-ready"
+- "5 minutes", "useful first draft"
+- "ownership", "WordPress", "SEO structure"
+- "client handoff", "white-label"
+- "agent-assisted", "agent-friendly"
+- "the slow part", "the blank page"</p>
+<p><strong>Tone anti-patterns (they avoid):</strong>
+- "AI-powered" (used minimally)
+- "10x your workflow"
+- "Revolutionary"
+- "Game-changing" (yes they say it in testimonials, but the founder avoids it)
+- "All-in-one"</p>
+<p><strong>Signature line:</strong> "If the thing you want is a better way to build client websites than GHL Website Builder or GHL AI Studio, start with 1ClickWebsite.ai."</p>
+<hr />
+<h2 id="9-tech-stack-inferences-for-building-a-clone">9. TECH STACK INFERENCES (FOR BUILDING A CLONE)</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Likely tech</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>Next.js + React + Tailwind CSS</td>
+<td>Homepage shows Next.js image proxy patterns; CSS classes match Tailwind</td>
+</tr>
+<tr>
+<td><strong>Backend</strong></td>
+<td>Supabase (Postgres + Storage + Auth)</td>
+<td>Image URLs all go to <code>qmunvayuwpybejjrtvjc.supabase.co/storage/v1/object/public/...</code></td>
+</tr>
+<tr>
+<td><strong>Storage</strong></td>
+<td>Supabase Storage buckets: <code>reviews</code>, <code>Generated Sites</code>, <code>template-images</code>, <code>blog</code></td>
+<td>URL patterns</td>
+</tr>
+<tr>
+<td><strong>Payments</strong></td>
+<td>Stripe</td>
+<td>"Secure checkout powered by Stripe"</td>
+</tr>
+<tr>
+<td><strong>Demo hosting</strong></td>
+<td><code>*.m7q4.temphost024.com</code> subdomain pattern</td>
+<td>Template preview URLs</td>
+</tr>
+<tr>
+<td><strong>AI generation</strong></td>
+<td>OpenAI GPT image gen + Claude (V2 agent)</td>
+<td>Confirmed via blog</td>
+</tr>
+<tr>
+<td><strong>Email</strong></td>
+<td>FluentSMTP on generated WP sites</td>
+<td>Plugin name appears in stack</td>
+</tr>
+<tr>
+<td><strong>SEO on generated sites</strong></td>
+<td>Slim SEO</td>
+<td>Plugin name appears in stack</td>
+</tr>
+<tr>
+<td><strong>V1 builder</strong></td>
+<td>Breakdance Pro</td>
+<td>Plugin name appears in stack</td>
+</tr>
+<tr>
+<td><strong>V2 builder</strong></td>
+<td>OCF (custom plugin)</td>
+<td>Founder blog</td>
+</tr>
+<tr>
+<td><strong>Calendar/booking</strong></td>
+<td>cal.com</td>
+<td>Agency plan CTA links there</td>
+</tr>
+<tr>
+<td><strong>Blog</strong></td>
+<td>Custom (not Ghost/Substack)</td>
+<td><code>/blog/&lt;slug&gt;</code> URL pattern + Vercel-style pages</td>
+</tr>
+<tr>
+<td><strong>Analytics</strong></td>
+<td>Unknown</td>
+<td>Not visible in scrape</td>
+</tr>
+<tr>
+<td><strong>CDN</strong></td>
+<td>Cloudflare likely</td>
+<td><code>_next/image</code> proxy pattern + Supabase CDN</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Database schema inferred (Supabase Postgres):</strong>
+- <code>users</code> (agency owner accounts)
+- <code>sites</code> (generated WP site records, slug, template_id, status)
+- <code>subscriptions</code> (Stripe-linked, tier, sites_remaining)
+- <code>leads</code> (LeadGen CSV uploads)
+- <code>templates</code> (template metadata, preview_url)
+- <code>blog_posts</code> (CMS)
+- <code>reviews</code> (testimonials)
+- <code>payments</code> (Stripe events log)</p>
+<hr />
+<h2 id="10-page-inventory-website">10. PAGE INVENTORY (WEBSITE)</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Purpose</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>Marketing homepage</td>
+<td>Static SSG</td>
+</tr>
+<tr>
+<td><code>/create</code></td>
+<td>Site generation flow (with <code>#v1</code> / <code>#v2</code> hash toggle)</td>
+<td>Dynamic SPA-like</td>
+</tr>
+<tr>
+<td><code>/create#v1</code></td>
+<td>V1 builder picker</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/create#v2</code></td>
+<td>V2 builder picker (Lightning flagship)</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/pricing</code></td>
+<td>404'd at scrape time, but content is in homepage</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/about</code></td>
+<td>404</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/blog</code></td>
+<td>Blog index</td>
+<td>SSG</td>
+</tr>
+<tr>
+<td><code>/blog/v2-release</code></td>
+<td>V2 release notes</td>
+<td>SSG</td>
+</tr>
+<tr>
+<td><code>/blog/v2-rerelease-june-20</code></td>
+<td>V2 re-release announcement</td>
+<td>SSG</td>
+</tr>
+<tr>
+<td><code>/blog/best-ghl-website-alternatives</code></td>
+<td>SEO competitor piece</td>
+<td>SSG</td>
+</tr>
+<tr>
+<td><code>/blog/add-ghl-mcp-to-claude-desktop</code></td>
+<td>Tutorial</td>
+<td>SSG</td>
+</tr>
+<tr>
+<td><code>/signup</code> / <code>/login</code></td>
+<td>Auth (Stripe Customer Portal)</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/dashboard</code></td>
+<td>Post-login user area (assumed)</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/dashboard/sites</code></td>
+<td>List of generated sites (assumed)</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/dashboard/sites/&lt;id&gt;</code></td>
+<td>Site detail + Website Agent</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/dashboard/leads</code></td>
+<td>LeadGen CSV uploads + results</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/dashboard/billing</code></td>
+<td>Stripe portal</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/dashboard/agent</code></td>
+<td>Website Agent chat interface</td>
+<td>Dynamic</td>
+</tr>
+<tr>
+<td><code>/support</code></td>
+<td>Support portal (referenced in testimonials)</td>
+<td>Dynamic</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Auth model:</strong> Supabase Auth + Stripe Customer (linked via Stripe customer ID).</p>
+<hr />
+<h2 id="11-key-metrics-claimed">11. KEY METRICS (CLAIMED)</h2>
+<p>From homepage + testimonials:</p>
+<ul>
+<li><strong>5,000+ sites generated</strong> (homepage badge)</li>
+<li><strong>Trusted by agency owners</strong> (homepage badge)</li>
+<li><strong>~5 minutes per site</strong> (homepage hero + multiple testimonials)</li>
+<li><strong>3,000+ leads/month potential</strong> at Expert tier (1K LeadGen Runs/month)</li>
+<li><strong>Average customer:</strong> "I've already sold 6 websites in the last 30 days" (testimonial)</li>
+</ul>
+<hr />
+<h2 id="12-what-to-build-clone-brief-for-claude-code">12. WHAT TO BUILD (CLONE BRIEF FOR CLAUDE CODE)</h2>
+<p>If you're cloning this, here's the MVP in order of priority:</p>
+<h3 id="tier-1-mvp-ship-in-30-days">Tier 1 — MVP (ship in 30 days)</h3>
+<ol>
+<li><strong>Template picker</strong> (carousel, 3-5 templates minimum)</li>
+<li><strong>Intake form</strong> (business name, industry, services, city, language)</li>
+<li><strong>Generation engine</strong> (LLM call → WordPress install with Breakdance or custom blocks)</li>
+<li><strong>Three delivery options</strong> (download .zip / temp link / migrate to user hosting)</li>
+<li><strong>Stripe subscription</strong> (3 tiers: $49 / $97 / $197)</li>
+<li><strong>User dashboard</strong> (sites list + status + download links)</li>
+</ol>
+<h3 id="tier-2-v2-equivalent-months-2-3">Tier 2 — V2 equivalent (months 2-3)</h3>
+<ol start="7">
+<li><strong>OCF-style structured editing layer</strong> (sections as JSON, not as builder blobs)</li>
+<li><strong>Website Agent chat</strong> (Claude API editing structured sections)</li>
+<li><strong>Section variation system</strong> (multiple variants per section type)</li>
+<li><strong>Light/dark mode toggle</strong> (theme.json-level, not CSS hack)</li>
+</ol>
+<h3 id="tier-3-growth-features-months-4">Tier 3 — Growth features (months 4+)</h3>
+<ol start="11">
+<li><strong>LeadGen CSV upload</strong> (batch mini sites for outreach)</li>
+<li><strong>Managed hosting</strong> ($10/site/month add-on)</li>
+<li><strong>Claude Code MCP server</strong> (expose OCF endpoints as agent tools)</li>
+<li><strong>Multi-language support</strong> (English, Spanish, French, German, Italian, Romanian, Turkish)</li>
+</ol>
+<h3 id="tier-4-moat-months-6">Tier 4 — Moat (months 6+)</h3>
+<ol start="15">
+<li><strong>Bring-your-own AI keys</strong> (agency controls which model)</li>
+<li><strong>Team member seats</strong> (multi-user agency accounts)</li>
+<li><strong>Full white-label</strong> (custom domain, custom branding throughout)</li>
+<li><strong>Affiliate / reseller program</strong></li>
+</ol>
+<hr />
+<h2 id="13-what-makes-this-hard-to-clone">13. WHAT MAKES THIS HARD TO CLONE</h2>
+<ol>
+<li><strong>The generation quality.</strong> Anyone can wrap an LLM. The moat is the prompts, the templates, the structured sections. 1ClickWebsite.ai clearly has hundreds of hours of prompt + template tuning.</li>
+<li><strong>The exportability.</strong> Real WordPress export with proper image handling, DB dumps, plugin compatibility — this is engineering depth.</li>
+<li><strong>The SEO structure.</strong> Prewritten meta titles, descriptions, schema, sitemap, service + location pages — this is content systems work, not AI work.</li>
+<li><strong>The agent integration.</strong> OCF's structured fields are the moat that lets the Website Agent actually work. Most "AI website builders" don't have this layer.</li>
+<li><strong>The hosting handoff.</strong> Migrating a generated site to your own hosting cleanly is non-trivial. Migration plugin support is a real engineering surface.</li>
+</ol>
+<hr />
+<h2 id="14-open-questions-cant-verify-without-login">14. OPEN QUESTIONS (CAN'T VERIFY WITHOUT LOGIN)</h2>
+<ul>
+<li>What's in the OCF plugin specifically? (section types, field types, REST API surface)</li>
+<li>What's the actual generation pipeline? (parallel LLM calls? single mega-prompt? post-processing?)</li>
+<li>How does the temp hosting subdomain work? (<code>*.temphost024.com</code> pattern — fleet of small VPS?)</li>
+<li>What's the cost-per-generation? (GPT-image + Claude tokens + compute)</li>
+<li>How is the V2 Website Agent's context window managed? (full page DOM? section-level?)</li>
+<li>What does the support portal look like? (referenced as "outstanding" in testimonials)</li>
+<li>What's the agency dashboard analytics? (sites generated, leads converted, MRR per agency?)</li>
+</ul>
+<hr />
+<h2 id="15-end">15. END</h2>
+<p><strong>One-line summary for Claude Code:</strong></p>
+<p>Build an AI WordPress site generator for agencies. Template picker → intake form → 5-min generation → real WordPress site → export or temp-link demo. The moat is structured sections (OCF-style) so an AI agent can edit generated sites safely. Sell to agencies at $49-197/mo who sell sites to local businesses at $500-5,000.</p>
+<hr />
+<p><strong>Sources:</strong>
+- https://1clickwebsite.ai/ (homepage, 25k chars)
+- https://1clickwebsite.ai/blog/v2-release (V1 vs V2 architecture spec)
+- https://1clickwebsite.ai/blog/v2-rerelease-june-20 (V2 re-release announcement)
+- https://1clickwebsite.ai/blog/best-ghl-website-alternatives (competitive positioning)
+- https://1clickwebsite.ai/blog/add-ghl-mcp-to-claude-desktop (MCP integration tutorial)</p>
+</body>
+</html>
